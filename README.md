@@ -4,10 +4,11 @@
 
 **Uni Students** is an existing app that shows students which courses they passed or failed each semester, and their grades. It only *displays* the transcript.
 
-**Smart Advisor** is a new extension that turns the transcript into personalised guidance:
+**Smart Advisor** is a new extension that reads the grades already in Uni Students and adds three features:
 
-1. **Next Semester (recommender system):** suggests which courses to choose next semester, based on your grades, prerequisites, interests and the outcomes of past students with similar transcripts.
-2. **Retake Coach (predictive model):** for each failed course, predicts your chance of passing the next exam and tells you where to focus. It uses past exam papers and tips from students who passed.
+1. **Choose Courses (recommender system):** recommends which courses to take next semester, based on your grades, prerequisites, interests and the outcomes of past students with similar transcripts.
+2. **Exam Coach (predictive model):** predicts your chance of passing an exam and shows where to focus. It uses the topics that appear most in past exams and tips from students who passed.
+3. **AI Revision (predictive model):** an AI-generated mock test in the style of past exams. From your answers it predicts how ready you are, your likely grade if you sat the exam today, and which topics to review.
 
 > This is a clickable mockup. All data and predictions are simulated.
 
@@ -20,7 +21,7 @@ On a desktop the app appears inside a phone frame. On a phone it fills the scree
 
 ## The AI / ML features
 
-### 1. Course recommender (Next Semester tab)
+### 1. Course recommender (Choose Courses tab)
 Each available course gets a **match score**. Inputs:
 - **Collaborative filtering:** grades of ~1,240 past students whose transcripts resemble yours, and how they did in each course
 - **Prerequisites:** passed or not passed, with a warning when one is missing (e.g. AI needs Linear Algebra)
@@ -29,7 +30,7 @@ Each available course gets a **match score**. Inputs:
 
 **Output:** a ranked list, each course with a *predicted grade*, a "Why we recommend it" explanation, prerequisite status and the grade distribution of similar students. You can add courses to a semester plan (30 ECTS target).
 
-### 2. Pass-probability model (Retake Coach tab)
+### 2. Pass-probability model (Exam Coach tab)
 For every failed course the app predicts the **chance of passing the next exam**. Inputs:
 - previous grade and number of attempts
 - grades in related courses
@@ -37,13 +38,18 @@ For every failed course the app predicts the **chance of passing the next exam**
 
 It also analyses **past exam papers** to show which topics appear most often (e.g. "Hypothesis testing: 10/10 exams, 30% of marks"). It then builds a **focus plan**: ticking off each item raises the predicted pass probability (e.g. Statistics 38% → 80%). Underneath are **tips from students who passed**, which can be upvoted, and past exam papers.
 
+### 3. Readiness prediction (AI Revision tab)
+The AI generates multiple-choice questions from the most frequent past-exam topics. Your results, combined with your previous grades, give:
+- a **readiness score** (Ready / Almost ready / Not ready yet)
+- a **predicted grade** and chance to pass if you sat the exam today
+- a **per-topic breakdown** and an AI suggestion of what to review, linking to the Exam Coach focus plan
+
 ## Things to try
-1. Tap **Show me** on the intro screen. **My Grades** is the existing Uni Students view, with semesters you can expand and collapse.
-2. Tap the purple banner or the **Next Semester** tab. Add courses to your plan until you reach 30 ECTS.
-3. Open **Artificial Intelligence** to see a missing-prerequisite warning and a low predicted grade.
-4. Open **Retake Coach → Statistics**. Tick items in the focus plan and watch the pass probability go up.
-5. Scroll down to the exam-topic frequency bars, the student tips and the past papers.
-6. The **?** buttons explain how each model works.
+1. On the intro screen, Smart Advisor shows it's connected to Uni Students. Tap **Get started**.
+2. **Choose Courses:** add courses to your plan until you reach 30 ECTS. Open **Artificial Intelligence** to see a missing-prerequisite warning.
+3. **Exam Coach → Statistics:** tick items in the focus plan and watch the pass probability rise. Scroll down for exam-topic frequency, student tips and past papers.
+4. **AI Revision → Statistics → Start:** answer the questions to get your readiness report, predicted grade and weak topics.
+5. The **?** buttons explain how each model works.
 
 ## Files
 | File | Purpose |

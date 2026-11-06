@@ -13,6 +13,7 @@ const I = {
   spark: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.2 6.3L20.5 10l-6.3 2.2L12 18.5l-2.2-6.3L3.5 10l6.3-1.7z"/></svg>',
   target: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>',
   user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
+  quiz: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="m8 12 2.5 2.5L16 9"/></svg>',
   bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
 };
 
@@ -78,7 +79,7 @@ const COACH = {
             { t: 'Flashcards for theory definitions', gain: 6 }, { t: 'Join the study group (Tue 17:00)', gain: 5 } ] },
 };
 
-const S = { screen: 'intro', params: {}, open: { 4: true }, plan: [], done: {}, sheet: null, toast: null, filter: 'all' };
+const S = { screen: 'intro', params: {}, plan: [], done: {}, sheet: null, toast: null, filter: 'all', quiz: null, history: {} };
 
 // ---------- Helpers ----------
 const all = () => SEMESTERS.flatMap(s => s.courses);
@@ -100,14 +101,14 @@ function ring(pct, color, size = 104, stroke = 10) {
 
 function tabbar(active) {
   const t = (id, label, icon, badge) => `<button class="tab ${active === id ? 'on' : ''}" data-go="${id}" style="position:relative">${I[icon]}${label}${badge ? `<span class="tab-badge">${badge}</span>` : ''}</button>`;
-  return `<nav class="tabbar" style="grid-template-columns:repeat(4,1fr)">${t('grades', 'My Grades', 'grades')}${t('next', 'Next Semester', 'spark', 'NEW')}${t('coach', 'Retake Coach', 'target', failed().length)}${t('profile', 'Profile', 'user')}</nav>`;
+  return `<nav class="tabbar" style="grid-template-columns:repeat(3,1fr)">${t('next', 'Choose Courses', 'spark')}${t('coach', 'Exam Coach', 'target', failed().length)}${t('revision', 'AI Revision', 'quiz', 'NEW')}</nav>`;
 }
 
 // ---------- Screens ----------
 const screens = {};
 
 screens.intro = () => `<div class="ob screen-in">
-  <button class="skip" data-go="grades">Skip</button>
+  <button class="skip" data-go="next">Skip</button>
   <div class="ob-art"><svg viewBox="0 0 260 210" width="250">
     <rect x="20" y="20" width="220" height="170" rx="24" fill="#fff" filter="drop-shadow(0 10px 20px rgba(91,91,214,.15))"/>
     <rect x="40" y="44" width="120" height="12" rx="6" fill="#e3f6ee"/><rect x="40" y="44" width="90" height="12" rx="6" fill="#17a673"/>
@@ -116,47 +117,18 @@ screens.intro = () => `<div class="ob screen-in">
     <circle cx="198" cy="74" r="28" fill="#5b5bd6"/><path d="M198 58l4 11 11 4-11 4-4 11-4-11-11-4 11-4z" fill="#fff"/>
     <rect x="40" y="124" width="180" height="46" rx="14" fill="#f5f6fb"/><text x="54" y="146" font-size="12" font-weight="700" fill="#181a2a">Software Engineering</text>
     <text x="54" y="161" font-size="10.5" fill="#6b7085">94% match · predicted grade 8.2</text></svg></div>
-  <span class="badge purple" style="align-self:flex-start;margin-bottom:10px">NEW IN UNI STUDENTS</span>
+  <span class="badge purple" style="align-self:flex-start;margin-bottom:10px">EXTENSION FOR UNI STUDENTS</span>
   <h2>Meet your <span style="color:var(--primary)">Smart Advisor</span></h2>
-  <p>We use your grades to recommend the best courses for next semester, and we coach you through the ones you didn't pass, using past exams and tips from students who passed.</p>
+  <p>We read the grades you already have in Uni Students to <b>recommend which courses to choose</b>, show you <b>where to focus</b> to pass your exams, and give you an <b>AI revision test</b> that shows how ready you are before you go.</p>
+  <div class="card row" style="margin-top:16px;padding:12px"><span style="color:var(--green);font-weight:800;font-size:18px">✓</span><div class="small"><b>Connected to Uni Students</b><br><span class="muted">16 courses · 4 semesters imported · GPA ${gpa()}</span></div></div>
   <div class="dots"><i class="on"></i></div>
-  <button class="btn btn-primary btn-block" data-go="grades">Show me</button>
+  <button class="btn btn-primary btn-block" data-go="next">Get started</button>
 </div>`;
-
-screens.grades = () => `
-  <div class="topbar screen-in"><div><div class="sub">Dept. of Informatics · Year 3</div><h2>My Grades</h2></div>
-    <button class="icon-btn" data-action="toast" data-v="No new grades yet">${I.bell}</button></div>
-  <div class="scroll screen-in">
-    <div class="stat-row" style="margin-top:0">
-      <div class="stat card-stat"><strong>${gpa()}</strong><span>GPA</span></div>
-      <div class="stat card-stat"><strong>${ectsDone()}</strong><span>/ 240 ECTS</span></div>
-      <div class="stat card-stat"><strong style="color:var(--red)">${failed().length}</strong><span>To retake</span></div>
-    </div>
-
-    <button class="hero" data-go="next" style="display:block;text-align:left;width:100%;margin-top:14px">
-      <div class="eyebrow">${I.spark.replace('<svg', '<svg width="12" height="12"')} Smart Advisor · Winter 2026 registration</div>
-      <h3>Your top pick: Software Engineering</h3>
-      <div class="meta">94% match · predicted grade <b>8.2</b> · see all ${RECS.length} recommendations ›</div>
-    </button>
-
-    ${SEMESTERS.slice().reverse().map(s => {
-      const p = s.courses.filter(c => c.g >= 5).length;
-      return `<div class="card" style="margin-top:12px">
-        <button class="row between" style="width:100%" data-action="toggle-sem" data-v="${s.n}">
-          <div style="text-align:left"><b style="font-size:14.5px">${s.label}</b><div class="small muted">${p}/${s.courses.length} passed · avg ${(s.courses.filter(c => c.g >= 5).reduce((a, c) => a + c.g, 0) / Math.max(p, 1)).toFixed(1)}</div></div>
-          <span class="chev" style="transform:rotate(${S.open[s.n] ? 90 : 0}deg);transition:.2s">›</span></button>
-        ${S.open[s.n] ? `<div style="margin-top:8px">${s.courses.map(c => `
-          <div class="topic"><div class="grow"><div class="t-name">${c.name}</div><div class="t-sub">${c.ects} ECTS · ${c.g >= 5 ? 'Passed' : 'Not passed'}</div></div>
-            ${c.g < 5 ? `<button class="badge red" data-go="course" data-id="${c.id}">Retake Coach ›</button>` : ''}
-            <div class="pct" style="color:${gradeCol(c.g)}">${c.g}</div></div>`).join('')}</div>` : ''}
-      </div>`; }).join('')}
-  </div>
-  ${tabbar('grades')}`;
 
 screens.next = () => {
   const list = RECS.filter(r => S.filter === 'all' || (S.filter === 'core' ? r.type === 'Core' : r.type === 'Elective'));
   const e = planEcts();
-  return `<div class="topbar screen-in"><div><div class="sub">Recommended for Winter 2026</div><h2>Next Semester</h2></div>
+  return `<div class="topbar screen-in"><div><div class="sub">Recommended for Winter 2026</div><h2>Choose Courses</h2></div>
     <button class="help" data-action="how" data-v="rec" style="width:28px;height:28px;font-size:14px">?</button></div>
   <div class="scroll screen-in">
     <div class="card" style="background:var(--primary-soft);box-shadow:none">
@@ -205,7 +177,7 @@ screens.rec = ({ id }) => {
 };
 
 screens.coach = () => `
-  <div class="topbar screen-in"><div><div class="sub">Next exam period: Feb 2027</div><h2>Retake Coach</h2></div>
+  <div class="topbar screen-in"><div><div class="sub">Next exam period: Feb 2027</div><h2>Exam Coach</h2></div>
     <button class="help" data-action="how" data-v="pred" style="width:28px;height:28px;font-size:14px">?</button></div>
   <div class="scroll screen-in">
     <p class="small muted" style="margin:0 2px 12px">For each course you didn't pass, we predict your chance of passing and show exactly where to focus.</p>
@@ -220,7 +192,7 @@ screens.coach = () => `
 
 screens.course = ({ id }) => {
   const c = COACH[id], p = probNow(id), st = probStatus(p);
-  return `<div class="topbar screen-in"><button class="back" data-go="${S.params.from || 'coach'}">‹ Back</button><span class="badge ${st.cls}">${st.l}</span></div>
+  return `<div class="topbar screen-in"><button class="back" data-go="${S.params.from === 'quizResult' ? 'revision' : 'coach'}">‹ Back</button><span class="badge ${st.cls}">${st.l}</span></div>
   <div class="scroll screen-in">
     <div class="course-head">
       <div class="ring">${ring(p, st.col)}<div class="val"><div><strong style="color:${st.col}">${p}%</strong><span>chance to<br>pass</span></div></div></div>
@@ -236,6 +208,7 @@ screens.course = ({ id }) => {
         <div class="grow"><div class="t-name" style="${S.done[id + i] ? 'text-decoration:line-through;color:var(--muted)' : ''}">${x.t}</div></div>
         <span class="badge green">+${x.gain}%</span></button>`).join('')}</div>
 
+    <button class="btn btn-light btn-block" style="margin-top:12px" data-action="quiz" data-v="${id}">${I.quiz.replace('<svg', '<svg width="18" height="18"')} Test my readiness with AI</button>
     <div class="section-title"><h3>What the exam asks</h3><span class="small muted">last 10 exams</span></div>
     <div class="card">${c.examTopics.map((t, i) => `
       <div style="padding:8px 0;${i ? 'border-top:1px solid var(--line)' : ''}"><div class="row between"><span class="t-name" style="font-size:13.5px">${t.n}</span><b class="small">${t.pts}% of marks</b></div>
@@ -252,23 +225,104 @@ screens.course = ({ id }) => {
   </div>`;
 };
 
-screens.profile = () => `
-  <div class="topbar screen-in"><h2>Profile</h2></div>
+
+// ---------- AI Revision (quiz) ----------
+const QUIZ = {
+  stats: [
+    { topic: 'Hypothesis testing', q: 'You test H₀: μ = 50 and get p = 0.03. At α = 0.05 you should…', o: ['Accept H₀', 'Reject H₀', 'Increase the sample size', 'Nothing can be concluded'], a: 1, ex: 'p < α, so the result is significant: reject H₀.' },
+    { topic: 'Confidence intervals', q: 'If you increase the sample size n, a 95% confidence interval becomes…', o: ['Wider', 'Narrower', 'Unchanged', 'A 99% interval'], a: 1, ex: 'The margin of error is proportional to 1/√n, so the interval gets narrower.' },
+    { topic: 'Linear regression', q: 'In ŷ = 3 + 2x, what does the 2 mean?', o: ['ŷ when x = 0', 'Change in ŷ for each 1-unit increase in x', 'The correlation coefficient', 'The error term'], a: 1, ex: 'The slope is the change in ŷ for each one-unit increase in x.' },
+    { topic: 'Hypothesis testing', q: 'σ is unknown and n = 15. Which test do you use for the mean?', o: ['z-test', 't-test', 'Chi-square test', 'F-test'], a: 1, ex: 'Small sample, unknown σ → t-test with n − 1 = 14 degrees of freedom.' },
+    { topic: 'Chi-square tests', q: 'A chi-square test of independence is used for…', o: ['Two means', 'Two categorical variables', 'A regression slope', 'Three or more means'], a: 1, ex: 'It tests whether two categorical variables are associated.' },
+  ],
+  os: [
+    { topic: 'CPU scheduling', q: 'Which scheduling algorithm can cause starvation of long jobs?', o: ['FCFS', 'Round Robin', 'SJF', 'FIFO'], a: 2, ex: 'SJF keeps picking short jobs, so long ones may wait forever.' },
+    { topic: 'Synchronisation', q: 'A binary semaphore initialised to 1 is mainly used for…', o: ['Counting resources', 'Mutual exclusion', 'Paging', 'Scheduling'], a: 1, ex: 'A binary semaphore = mutex lock for a critical section.' },
+    { topic: 'Virtual memory', q: 'A page fault happens when…', o: ['The CPU overheats', 'The page is not in RAM', 'The TLB is full', 'A process ends'], a: 1, ex: 'The referenced page must be loaded from disk.' },
+    { topic: 'Deadlocks', q: 'The Banker\'s algorithm is used for deadlock…', o: ['Detection', 'Avoidance', 'Recovery', 'Ignoring'], a: 1, ex: 'It only grants requests that keep the system in a safe state.' },
+  ],
+  linalg: [
+    { topic: 'Eigenvalues', q: 'For A = [[2,0],[0,3]], the eigenvalues are…', o: ['0 and 5', '2 and 3', '6 and 1', '1 and 1'], a: 1, ex: 'For a diagonal matrix the eigenvalues are the diagonal entries.' },
+    { topic: 'Determinants', q: 'If det(A) = 0 then A is…', o: ['Invertible', 'Not invertible', 'Orthogonal', 'Symmetric'], a: 1, ex: 'A zero determinant means the matrix is singular.' },
+    { topic: 'Rank', q: 'A 3×3 matrix with rank 2 has a null space of dimension…', o: ['0', '1', '2', '3'], a: 1, ex: 'Rank–nullity: 3 − 2 = 1.' },
+    { topic: 'Diagonalisation', q: 'A 3×3 matrix with 3 distinct eigenvalues is…', o: ['Always diagonalisable', 'Never diagonalisable', 'Always symmetric', 'Singular'], a: 0, ex: 'Distinct eigenvalues give independent eigenvectors, so the matrix is diagonalisable.' },
+  ],
+};
+
+function startQuiz(c) { S.quiz = { c, i: 0, sel: null, checked: false, answers: [] }; go('quiz'); }
+function finishQuiz() {
+  const q = S.quiz, qs = QUIZ[q.c], correct = q.answers.filter(Boolean).length;
+  const ready = Math.round(20 + (correct / qs.length) * 70 + Math.min(10, (probNow(q.c) - 30) / 5));
+  const topics = {};
+  qs.forEach((x, i) => { topics[x.topic] = topics[x.topic] || { ok: 0, n: 0 }; topics[x.topic].n++; if (q.answers[i]) topics[x.topic].ok++; });
+  const prev = S.history[q.c]?.ready;
+  S.history[q.c] = { ready, correct, total: qs.length, topics, prev };
+  go('quizResult');
+}
+const readyStatus = r => r >= 75 ? { cls: 'green', col: 'var(--green)', l: 'Ready for the exam' } : r >= 55 ? { cls: 'amber', col: 'var(--amber)', l: 'Almost ready' } : { cls: 'red', col: 'var(--red)', l: 'Not ready yet' };
+
+screens.revision = () => `
+  <div class="topbar screen-in"><div><div class="sub">Test yourself before the exam</div><h2>AI Revision</h2></div>
+    <button class="help" data-action="how" data-v="quiz" style="width:28px;height:28px;font-size:14px">?</button></div>
   <div class="scroll screen-in">
-    <div class="card row"><div class="c-icon" style="background:var(--primary)">PT</div><div><b>Petros T.</b><div class="small muted">Dept. of Informatics · Year 3</div></div></div>
-    <div class="section-title"><h3>Interests (used for recommendations)</h3></div>
-    <div class="chips">${['AI & data', 'Software development', 'Security', 'Networks', 'Theory', 'Business IT'].map((t, i) => `<button class="chip ${i < 2 ? 'on' : ''}" data-action="chip">${t}</button>`).join('')}</div>
-    <div class="section-title"><h3>Privacy</h3></div>
-    <div class="card small" style="line-height:1.5">Your grades are compared <b>anonymously</b> with other students' transcripts. No one can see your grades. Tips you write are shown only with your grade and exam date.</div>
-    <button class="btn btn-ghost btn-block" style="margin-top:14px" data-action="how" data-v="all">How Smart Advisor works</button>
+    <div class="hero"><div class="eyebrow">${I.spark.replace('<svg', '<svg width="12" height="12"')} How it works</div>
+      <h3>A 5-minute mock exam, made by AI</h3>
+      <div class="meta">Questions are generated from the topics that appear most in your professor's past exams. You'll get a readiness score and a predicted grade.</div></div>
+    <div class="section-title"><h3>Choose an exam</h3><span class="small muted">Feb 2027 period</span></div>
+    ${failed().map(c => { const h = S.history[c.id]; const st = h && readyStatus(h.ready); return `
+      <div class="card"><div class="row">
+        <div class="c-icon" style="background:var(--primary)">${c.name.split(' ').map(w => w[0]).join('').slice(0, 2)}</div>
+        <div class="grow"><b style="font-size:14.5px">${c.name}</b>
+          <div class="small muted">${QUIZ[c.id].length} questions · ~${QUIZ[c.id].length + 1} min</div>
+          ${h ? `<div style="margin-top:5px"><span class="badge ${st.cls}">${h.ready}% · ${st.l}</span></div>` : '<div class="small" style="margin-top:5px;color:var(--primary)">Not tested yet</div>'}</div>
+        <button class="btn btn-primary btn-sm" data-action="quiz" data-v="${c.id}">${h ? 'Retry' : 'Start'}</button></div></div>`; }).join('')}
   </div>
-  ${tabbar('profile')}`;
+  ${tabbar('revision')}`;
+
+screens.quiz = () => {
+  const q = S.quiz, qs = QUIZ[q.c], x = qs[q.i];
+  return `<div class="topbar screen-in"><button class="back" data-action="quit-quiz">✕ Quit</button><span class="small muted">${COACH[q.c].name}</span><b class="small">${q.i + 1}/${qs.length}</b></div>
+  <div style="padding:0 18px"><div class="bar"><i style="width:${((q.i + (q.checked ? 1 : 0)) / qs.length) * 100}%;background:var(--primary)"></i></div></div>
+  <div class="scroll screen-in" style="padding-top:18px">
+    <span class="badge purple">${x.topic}</span>
+    <h2 style="font-size:19px;line-height:1.35;margin:12px 0 18px">${x.q}</h2>
+    ${x.o.map((o, i) => { let st = ''; if (q.checked) { if (i === x.a) st = 'correct'; else if (i === q.sel) st = 'wrong'; } else if (i === q.sel) st = 'sel'; return `
+      <button class="opt ${st}" data-action="answer" data-v="${i}"><span class="opt-l">${'ABCD'[i]}</span>${o}</button>`; }).join('')}
+    ${q.checked ? `<div class="card" style="margin-top:14px;background:${q.sel === x.a ? 'var(--green-soft)' : 'var(--red-soft)'};box-shadow:none">
+      <b style="color:${q.sel === x.a ? 'var(--green)' : 'var(--red)'}">${q.sel === x.a ? '✓ Correct' : '✗ Not quite'}</b><p class="small" style="margin-top:4px">${x.ex}</p></div>` : ''}
+    <button class="btn btn-primary btn-block" style="margin-top:18px" data-action="${q.checked ? 'next-q' : 'check-answer'}" ${q.sel == null ? 'disabled' : ''}>${q.checked ? (q.i + 1 === qs.length ? 'See my readiness' : 'Next question') : 'Check answer'}</button>
+  </div>`;
+};
+
+screens.quizResult = () => {
+  const c = S.quiz.c, h = S.history[c], st = readyStatus(h.ready), grade = Math.max(2, Math.min(9.5, h.ready / 10)).toFixed(1);
+  const weak = Object.entries(h.topics).filter(([, t]) => t.ok < t.n).map(([n]) => n);
+  return `<div class="topbar screen-in"><span></span><span class="small muted">Readiness report</span><span></span></div>
+  <div class="scroll screen-in">
+    <div style="display:flex;justify-content:center;margin-top:6px"><div class="ring" style="width:150px;height:150px">${ring(h.ready, st.col, 150, 12).replace('<svg', '<svg style="width:150px;height:150px"')}<div class="val"><div><strong style="color:${st.col};font-size:34px">${h.ready}%</strong><span>ready</span></div></div></div></div>
+    <h2 style="text-align:center;font-size:21px;margin-top:10px">${st.l}</h2>
+    <p class="muted" style="text-align:center;margin:4px 0 16px">${COACH[c].name} · ${h.correct}/${h.total} correct${h.prev != null ? ` · was ${h.prev}% last time` : ''}</p>
+    <div class="stat-row" style="margin-top:0"><div class="stat card-stat"><strong style="color:${gradeCol(+grade)}">${grade}</strong><span>Predicted grade today</span></div>
+      <div class="stat card-stat"><strong>${Math.min(97, Math.round(h.ready * 0.9 + 10))}%</strong><span>Chance to pass</span></div>
+      <div class="stat card-stat"><strong>${weak.length}</strong><span>Topics to review</span></div></div>
+    <div class="section-title"><h3>By topic</h3></div>
+    <div class="card" style="padding:4px 16px">${Object.entries(h.topics).map(([n, t]) => `<div class="topic"><div class="grow"><div class="t-name">${n}</div>
+      <div class="bar" style="margin-top:7px"><i style="width:${t.ok / t.n * 100}%;background:${t.ok === t.n ? 'var(--green)' : 'var(--red)'}"></i></div></div><div class="pct">${t.ok}/${t.n}</div></div>`).join('')}</div>
+    ${weak.length ? `<div class="card" style="background:var(--primary-soft);box-shadow:none;margin-top:12px"><b style="color:var(--primary);font-size:14px">${I.spark.replace('<svg', '<svg width="12" height="12"')} AI suggestion</b>
+      <p class="small" style="margin-top:4px">Review <b>${weak.join(', ')}</b> before the exam. Students who fixed these topics raised their grade by ~1.5 points on average.</p></div>` :
+      '<div class="card" style="background:var(--green-soft);box-shadow:none;margin-top:12px"><b style="color:var(--green)">🎉 You\'re in great shape</b><p class="small" style="margin-top:4px">Do one full past paper under time pressure to confirm.</p></div>'}
+    <button class="btn btn-primary btn-block" style="margin-top:16px" data-go="course" data-id="${c}">Open my focus plan</button>
+    <button class="btn btn-ghost btn-block" style="margin-top:8px" data-action="quiz" data-v="${c}">Retake test</button>
+    <button class="btn btn-ghost btn-block" style="margin-top:8px" data-go="revision">Back to AI Revision</button>
+  </div>`;
+};
 
 // ---------- Sheets ----------
 const sheets = {
   how: v => {
     const parts = {
       rec: ['✦ Course recommender', 'We compare your transcript with ~1,240 past students. Courses are ranked by (1) how students with similar grades in related courses performed, (2) whether you passed the prerequisites, (3) your interests and (4) workload balance. For each course we also predict your grade.'],
+      quiz: ['🧠 AI revision test', 'The AI generates questions in the style of your professor, from the topics that appear most often in past exams. Your answers, how long you take and your past grades go into a model that predicts your readiness and your likely grade if you sat the exam today.'],
       pred: ['🎯 Pass-probability model', 'A predictive model estimates your chance of passing a retake from your previous grade, number of attempts, your grades in related courses and what past students did before they passed. We also analyse past exam papers to find the topics that appear most often and carry the most marks.'],
     };
     const list = v === 'all' ? Object.values(parts) : [parts[v]];
@@ -294,7 +348,12 @@ let tt;
 function toast(m) { S.toast = m; rerender(); clearTimeout(tt); tt = setTimeout(() => { S.toast = null; rerender(); }, 2400); }
 
 const actions = {
-  reset: () => { Object.assign(S, { screen: 'intro', plan: [], done: {}, sheet: null, filter: 'all', open: { 4: true } }); render(); },
+  reset: () => { Object.assign(S, { screen: 'intro', plan: [], done: {}, sheet: null, filter: 'all', quiz: null, history: {} }); render(); },
+  quiz: el => startQuiz(el.dataset.v),
+  answer: el => { if (S.quiz.checked) return; S.quiz.sel = +el.dataset.v; rerender(); },
+  'check-answer': () => { const q = S.quiz; if (q.sel == null) return; q.checked = true; q.answers.push(q.sel === QUIZ[q.c][q.i].a); rerender(); },
+  'next-q': () => { const q = S.quiz; if (q.i + 1 >= QUIZ[q.c].length) { finishQuiz(); return; } q.i++; q.sel = null; q.checked = false; render(); },
+  'quit-quiz': () => go('revision'),
   'toggle-sem': el => { S.open[el.dataset.v] = !S.open[el.dataset.v]; rerender(); },
   'toggle-plan': el => {
     const id = el.dataset.v, r = RECS.find(x => x.id === id);

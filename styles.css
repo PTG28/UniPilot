@@ -244,3 +244,11 @@ input[type=range] { width: 100%; accent-color: var(--primary); }
 .check.on { background: var(--green); border-color: var(--green); }
 .tab-badge { position: absolute; top: -4px; right: 14px; background: var(--red); color: #fff; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 99px; }
 .tab { font-size: 10px; }
+
+.opt { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 13px 14px; font-size: 14.5px; font-weight: 500; margin-bottom: 9px; }
+.opt-l { width: 28px; height: 28px; border-radius: 9px; background: var(--bg); display: grid; place-items: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+.opt.sel { border-color: var(--primary); background: var(--primary-soft); }
+.opt.correct { border-color: var(--green); background: var(--green-soft); }
+.opt.correct .opt-l { background: var(--green); color: #fff; }
+.opt.wrong { border-color: var(--red); background: var(--red-soft); }
+.opt.wrong .opt-l { background: var(--red); color: #fff; }
