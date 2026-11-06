@@ -18,4 +18,4 @@ Open `index.html` in a browser. No installation or server is required.
 - In Semester planner, add and remove courses and see the ECTS total update.
 - In Exam coach, answer three sample Computer Networks questions to get a readiness score, a predicted grade, a chance to pass, topic frequency in past exams, a focus suggestion and tips from students who passed.
 
-This is a front-end prototype. All student details, course data, match scores, and exam feedback are sample content; no university account or AI service is connected. The provided mascot images are stored alongside the mockup as `emile.webp` and `emile_hi.webp`.
+This is a front-end prototype. All student details, course data, match scores, and exam feedback are sample content; no university account or AI service is connected. The provided mascot images are in the `assets/` folder (`assets/emile.webp`, `assets/emile_hi.webp`). Keep that folder next to `index.html`.
