@@ -1,59 +1,59 @@
-# StudySync — HW1 Interactive Mockup
+# Uni Students + Smart Advisor: HW1 Interactive Mockup
 
-**Know if you'll be ready *before* the exam.**
+**Pick the right courses. Pass the ones you missed.**
 
-StudySync is a mobile study companion for university students. Instead of just tracking study time, it **predicts how ready you will be on exam day** for each course, and **recommends what to study next and at which hour** you are likely to focus best.
+**Uni Students** is an existing app that shows students which courses they passed or failed each semester, and their grades. It only *displays* the transcript.
 
-> This is an interactive, clickable mockup. All data and predictions are simulated. Nothing is sent anywhere.
+**Smart Advisor** is a new extension that turns the transcript into personalised guidance:
+
+1. **Next Semester (recommender system):** suggests which courses to choose next semester, based on your grades, prerequisites, interests and the outcomes of past students with similar transcripts.
+2. **Retake Coach (predictive model):** for each failed course, predicts your chance of passing the next exam and tells you where to focus. It uses past exam papers and tips from students who passed.
+
+> This is a clickable mockup. All data and predictions are simulated.
 
 ## How to run
-
-No build step and no dependencies. Do one of these:
-
-- Open `index.html` in any modern browser, **or**
-- Serve the folder: `python3 -m http.server 8000`, then open <http://localhost:8000>
+No build step and no dependencies.
+- Open `index.html` in a browser, **or**
+- Run `python3 -m http.server 8000` in this folder, then open <http://localhost:8000>
 
 On a desktop the app appears inside a phone frame. On a phone it fills the screen.
 
 ## The AI / ML features
 
-### 1. Predictive model: exam readiness forecast
-For every course, StudySync predicts your readiness (0–100%) on exam day, with a confidence band.
-- **Inputs (features):** topic mastery (self-ratings and quick quizzes), study consistency over the last 14 days, average focus rating during sessions, material remaining vs. days left, and each topic's exam weight.
-- **Output:** predicted readiness on exam day, with ±uncertainty. Each course is labelled *On track* (≥80%), *At risk* (65–79%) or *Behind* (<65%).
-- The band narrows as more sessions are logged.
+### 1. Course recommender (Next Semester tab)
+Each available course gets a **match score**. Inputs:
+- **Collaborative filtering:** grades of ~1,240 past students whose transcripts resemble yours, and how they did in each course
+- **Prerequisites:** passed or not passed, with a warning when one is missing (e.g. AI needs Linear Algebra)
+- **Content match:** your grades in related courses (e.g. OOP + Databases → Software Engineering)
+- **Your interests** (Profile tab) and **workload balance** (hours/week)
 
-### 2. Predictive model: personal focus forecast
-After each session the user rates their focus (1–5). The model learns how focus varies by hour of day, weekday, session length and (optionally) sleep, and predicts today's focus **hour by hour**.
+**Output:** a ranked list, each course with a *predicted grade*, a "Why we recommend it" explanation, prerequisite status and the grade distribution of similar students. You can add courses to a semester plan (30 ECTS target).
 
-### 3. Recommender system: next best session + weekly plan
-Every (course, topic) pair is ranked by:
-- predicted shortfall below the 80% "ready" line
-- exam urgency (days left)
-- topic weakness × exam weight
+### 2. Pass-probability model (Retake Coach tab)
+For every failed course the app predicts the **chance of passing the next exam**. Inputs:
+- previous grade and number of attempts
+- grades in related courses
+- what successful past students did before they passed
 
-The top recommendation is matched with the user's best upcoming focus slot. Each recommendation shows **"Why this?"** and the expected readiness gain. The same ranking drives an auto-generated **weekly study plan**.
+It also analyses **past exam papers** to show which topics appear most often (e.g. "Hypothesis testing: 10/10 exams, 30% of marks"). It then builds a **focus plan**: ticking off each item raises the predicted pass probability (e.g. Statistics 38% → 80%). Underneath are **tips from students who passed**, which can be upvoted, and past exam papers.
 
-## Things to try in the mockup
-
-1. Go through onboarding (or tap **Skip**).
-2. On **Today**, read the recommended session and tap **⋯** to see the other ranked options.
-3. Tap a course card to see its **readiness trajectory** (history + dashed forecast + confidence band), its topics, and the factors driving the prediction.
-4. Tap **Start now**, then **⏩ Skip (demo)**. Rate your focus and confidence, then tap **Update my predictions**. The forecast goes up, and the Today screen and recommendations update.
-5. Open **Plan**: switch days, tap a session block, and change sessions/day or session length in settings (⚙).
-6. Open **Insights** for the focus heatmap and model accuracy.
-7. On **Courses**, tap **+** to add a new course.
-8. The **?** buttons explain how each model works.
+## Things to try
+1. Tap **Show me** on the intro screen. **My Grades** is the existing Uni Students view, with semesters you can expand and collapse.
+2. Tap the purple banner or the **Next Semester** tab. Add courses to your plan until you reach 30 ECTS.
+3. Open **Artificial Intelligence** to see a missing-prerequisite warning and a low predicted grade.
+4. Open **Retake Coach → Statistics**. Tick items in the focus plan and watch the pass probability go up.
+5. Scroll down to the exam-topic frequency bars, the student tips and the past papers.
+6. The **?** buttons explain how each model works.
 
 ## Files
-
 | File | Purpose |
 |---|---|
-| `index.html` | Page shell + phone frame + project description panel |
-| `styles.css` | All styling |
-| `app.js` | Screens, navigation, simulated models, interactions |
+| `index.html` | Page shell, phone frame, project description |
+| `styles.css` | Styling |
+| `app.js` | Screens, navigation, simulated data and models |
 
-## Roadmap (later in the semester)
-- Replace the simulated models with real ones: e.g. gradient-boosted regression for readiness, and a time-series/contextual model for focus.
-- A learned recommender (contextual bandit) that optimizes readiness gain per session.
-- Backend, user accounts, e-class calendar import, notifications.
+## Roadmap
+- Real recommender (matrix factorisation / k-NN over anonymised transcripts)
+- Real pass-probability model (logistic regression / gradient boosting)
+- NLP over past exam papers to extract topics automatically
+- Integration with the real Uni Students app data and university registration

@@ -238,3 +238,9 @@ input[type=range] { width: 100%; accent-color: var(--primary); }
 
 .btn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
 .ring.ring-sm, .ring.ring-sm svg { width: 70px; height: 70px; }
+.card-stat { background: #fff; box-shadow: var(--shadow); }
+.ring.ring-xs, .ring.ring-xs svg { width: 52px; height: 52px; }
+.check { width: 24px; height: 24px; border-radius: 8px; border: 2px solid var(--line); display: grid; place-items: center; flex-shrink: 0; font-size: 13px; font-weight: 800; color: #fff; }
+.check.on { background: var(--green); border-color: var(--green); }
+.tab-badge { position: absolute; top: -4px; right: 14px; background: var(--red); color: #fff; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 99px; }
+.tab { font-size: 10px; }
